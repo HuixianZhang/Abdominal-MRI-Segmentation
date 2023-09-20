@@ -1,14 +1,4 @@
-# Copyright 2020 - 2021 MONAI Consortium
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+# Modified network architecture from UNETR model, based on: Hatamizadeh et al.
 from typing import Tuple, Union
 import torch
 import torch.nn as nn
@@ -20,10 +10,6 @@ from monai.networks.nets import ViT
 
 
 class UNETR(nn.Module):
-    """
-    UNETR based on: "Hatamizadeh et al.,
-    UNETR: Transformers for 3D Medical Image Segmentation <https://arxiv.org/abs/2103.10504>"
-    """
 
     def __init__(
         self,
@@ -118,6 +104,7 @@ class UNETR(nn.Module):
             conv_block=conv_block,
             res_block=res_block,
         )
+        # Modified the upsample kernel size since the changed patch size
         self.encoder3 = UnetrPrUpBlock(
             spatial_dims=3,
             in_channels=hidden_size,
@@ -130,6 +117,7 @@ class UNETR(nn.Module):
             conv_block=conv_block,
             res_block=res_block,
         )
+        # Modified the upsample kernel size since the changed patch size
         self.encoder4 = UnetrPrUpBlock(
             spatial_dims=3,
             in_channels=hidden_size,
@@ -142,6 +130,7 @@ class UNETR(nn.Module):
             conv_block=conv_block,
             res_block=res_block,
         )
+        # Modified the upsample kernel size since the changed patch size
         self.decoder5 = UnetrUpBlock(
             spatial_dims=3,
             in_channels=hidden_size,
@@ -151,7 +140,7 @@ class UNETR(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-      
+        # Modified the upsample kernel size since the changed patch size
         self.decoder4 = UnetrUpBlock(
             spatial_dims=3,
             in_channels=feature_size * 8,
@@ -209,30 +198,17 @@ class UNETR(nn.Module):
     def forward(self, x_in):
         x, hidden_states_out = self.vit(x_in)
         enc1 = self.encoder1(x_in)
-        
         x2 = hidden_states_out[3]
-        
         enc2 = self.encoder2(self.proj_feat(x2, self.hidden_size, self.feat_size))
-        
         x3 = hidden_states_out[6]
-        
         enc3 = self.encoder3(self.proj_feat(x3, self.hidden_size, self.feat_size))
-        
         x4 = hidden_states_out[9]
-        
         enc4 = self.encoder4(self.proj_feat(x4, self.hidden_size, self.feat_size))
-        
         dec4 = self.proj_feat(x, self.hidden_size, self.feat_size)
-        
         dec3 = self.decoder5(dec4, enc4)
-        
         dec2 = self.decoder4(dec3, enc3)
-        
         dec1 = self.decoder3(dec2, enc2)
-        
         out = self.decoder2(dec1, enc1)
-        
         logits = self.out(out)
-        
         return logits
 
