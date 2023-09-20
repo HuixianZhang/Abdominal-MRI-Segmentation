@@ -11,6 +11,12 @@ MRI T2-weighted, T1-weighted and DWI data curated from multiple institutions.
 
 run "Draw_uncertainty_map.py", you will get images like below:
 
-![Alt text](uncertainty_1.ext)
+![Alt text](uncertainty_1.png)
+
+# Demo
+We launched our model on our internal website, it looks like:
+![Alt text](demo_1.png)
+![Alt text](demo_2.png)
+Stay tuned for more updates!
 
 
